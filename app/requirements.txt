@@ -1,0 +1,7 @@
+asgiref==3.9.1
+Django==5.2.6
+sqlparse==0.5.3
+
+
+# PostgreSQL database adapter for Python
+# psycopg2-binary
