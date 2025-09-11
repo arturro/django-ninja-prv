@@ -204,3 +204,27 @@ __Your API must pass all validation tests to qualify for payment.__
 For questions about multi-tenancy requirements or technical issues, contact: marcin.galczynski@int4.com or tomasz.mackowski@int4.com
 
 Deadline: [X] days from receipt
+
+
+## prv
+
+### Project Setup Instructions
+
+#### 
+1. Clone the repository
+2. https://docs.astral.sh/uv/getting-started/installation/ install uv
+
+3. cd into the project directory
+```bash
+    uv sync
+    uv run manage.py makemigrations
+    uv run manage.py migrate
+    # uv run manage.py createsuperuser
+    # TODO
+    uv run manage.py runserver
+```
+
+TODO
+- [ ] add some users to the DB
+- [ ] add sample .env file
+- 
