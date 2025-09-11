@@ -12,7 +12,7 @@ ENV PYTHONUNBUFFERED 1
 
 # install dependencies
 RUN pip install --upgrade pip
-COPY ./requirements.txt .
+COPY requirements/requirements.txt .
 RUN pip install -r requirements.txt
 
 # copy project

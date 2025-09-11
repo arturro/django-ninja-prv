@@ -109,7 +109,7 @@ Implement __one__ of these multi-tenancy approaches:
     • Clean Django project structure
     • Environment configuration files (.env.example)
     • Dependencies documented
-    • README.md  with lLocal development setup instructions
+    • README.md  with local development setup instructions
 ### 3. Test Suite
     • Comprehensive unit tests using Django's TestCase
     • Test runner should pass all tests: python manage.py test or pytest
