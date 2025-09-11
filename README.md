@@ -30,9 +30,9 @@ Build a Django REST API with multi-tenant task management:
 
 #### Data Models:
     • Organization: name, created_at
-    • User: Standard Django user + organization foreign key (one-to-one relationship)
+    • User: Standard Django user + organization foreign key (many-to-one relationship)
     • Task: title, description, completed, assigned_to, organization, created_at,deadline_datetime_with_tz,priority
-    • Users are assigned to exactly one organization
+    • Users are assigned to exactly one organization. One organization can have multiple users.
 
 #### Authentication & Authorization:
     • JWT-based authentication
