@@ -1,37 +1,6 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
-
-
-# class Organization(models.Model):
-#     """
-#     Represents a tenant or organization in the multi-tenant system.
-#     Each user and task belongs to a single organization.
-#     """
-#
-#     name = models.CharField(max_length=255, unique=True, help_text="The name of the organization.")
-#     created_at = models.DateTimeField(auto_now_add=True, help_text="The date and time the organization was created.")
-#
-#     def __str__(self):
-#         return self.name
-#
-#
-# class User(AbstractUser):
-#     """
-#     Custom user model with a foreign key to an organization.
-#     This links each user to a specific tenant.
-#     """
-#
-#     organization = models.ForeignKey(
-#         'Organization',
-#         on_delete=models.CASCADE,
-#         related_name='users',
-#         help_text="The organization this user belongs to.",
-#         null=True,  # TODO: Consider whether this should be nullable.
-#         blank=True,
-#     )
-#
-#     def __str__(self):
-#         return self.username
 
 
 class Task(models.Model):
@@ -51,7 +20,11 @@ class Task(models.Model):
     completed = models.BooleanField(default=False, help_text="Indicates if the task is completed.")
 
     assigned_to = models.ForeignKey(
-        'tenant.User', on_delete=models.SET_NULL, null=True, related_name='tasks', help_text="The user assigned to this task."
+        'tenant.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='tasks',
+        help_text="The user assigned to this task.",
     )
 
     organization = models.ForeignKey(
@@ -79,3 +52,14 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+    def clean(self):
+        super().clean()
+        if self.assigned_to and self.organization:
+            if self.assigned_to.organization != self.organization:
+                raise ValidationError(
+                    {
+                        'assigned_to': "The assigned user must belong to the same organization as the task.",
+                        'organization': "The assigned user must belong to the same organization as the task.",
+                    }
+                )
