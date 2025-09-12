@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from ninja import Router, Schema
+from ninja_jwt.authentication import JWTAuth
 
 from .models import Task
 
@@ -22,7 +23,7 @@ class TaskSchema(Schema):
         from_attributes = True
 
 
-@router.get("/tasks", response=List[TaskSchema])
+@router.get("/tasks", response=List[TaskSchema], tags=["Tasks"], auth=JWTAuth())
 def list_tasks(request):
     """
     Retrieve a list of all tasks.

@@ -18,7 +18,7 @@ def get_uptime():
     return f"{hours}h {minutes}m {seconds}s"
 
 
-router = Router()
+router = Router(tags=["Health Check"])
 
 
 class HealthCheckSchema(Schema):
