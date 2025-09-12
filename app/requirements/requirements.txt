@@ -1,7 +1,10 @@
 asgiref==3.9.1
 Django==5.2.6
 sqlparse==0.5.3
-
+django-ninja
+django-ninja-extra
+django-ninja-jwt
+# PyJWT
 
 # PostgreSQL database adapter for Python
 # psycopg2-binary

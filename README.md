@@ -28,6 +28,11 @@ Build a Django REST API with multi-tenant task management:
     • GET /api/v1/users/ - List users in current user's organization
     • POST /api/v1/users/ - Add user to current user's organization
 
+Questions:
+    * what with first user in organization? only admin can create organization and first user?
+      
+
+
 #### Data Models:
     • Organization: name, created_at
     • User: Standard Django user + organization foreign key (many-to-one relationship)
@@ -204,3 +209,13 @@ __Your API must pass all validation tests to qualify for payment.__
 For questions about multi-tenancy requirements or technical issues, contact: marcin.galczynski@int4.com or tomasz.mackowski@int4.com
 
 Deadline: [X] days from receipt
+
+
+## private
+
+```bash
+cd app
+coverage run manage.py test
+coverage report
+coverage html
+```
