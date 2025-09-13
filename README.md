@@ -30,6 +30,7 @@ Build a Django REST API with multi-tenant task management:
 
 Questions:
     * what with first user in organization? only admin can create organization and first user?
+    * maybe better is use task_id instead of id in task endpoints?
       
 
 

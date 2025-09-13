@@ -1,32 +1,40 @@
-from typing import List, Optional
+from typing import List
 
-from ninja import Router, Schema
-from ninja_jwt.authentication import JWTAuth
+from django.shortcuts import get_object_or_404
+
+from ninja import Router
 
 from .models import Task
+from .schema import TaskIn, TaskOut
 
 router = Router()
 
 
-class TaskSchema(Schema):
-    id: int
-    title: str
-    description: Optional[str]
-    completed: bool
-    priority: str
-    assigned_to: Optional[int]  # User ID
-    organization: int  # Organization ID
-    created_at: str  # ISO format date-time
-    deadline_datetime_with_tz: str  # ISO format date-time with timezone
+@router.post("/")
+def create_task(request, payload: TaskIn):
+    # confirm the user is assigning the task to themselves and within their organization
+    if payload.assigned_to_id != request.auth.id:
+        return {"error": "You can only assign tasks to yourself."}
+    if payload.organization_id != request.auth.organization.id:
+        return {"error": "You can only create tasks within your organization."}
 
-    class Config:
-        from_attributes = True
+    task = Task.objects.create(**payload.dict())
+    return {"id": task.id}
 
 
-@router.get("/tasks", response=List[TaskSchema], tags=["Tasks"], auth=JWTAuth())
+@router.get("/", response=List[TaskOut])
 def list_tasks(request):
     """
     Retrieve a list of all tasks.
     """
-    tasks = Task.objects.all()
+    tasks = Task.objects.select_related("assigned_to", "organization").filter(organization=request.auth.organization)
     return tasks
+
+
+@router.get("/{task_id}", response=TaskOut)
+def get_task(request, task_id: int):
+    """
+    Get a specific task by its ID.
+    """
+    task = get_object_or_404(Task, id=task_id, organization=request.auth.organization)
+    return task
