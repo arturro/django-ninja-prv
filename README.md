@@ -234,7 +234,8 @@ coverage html
 - [ ] add sorting to GET /api/v1/tasks/ (by deadline and priority)
 - [ ] add tests for pagination, filtering and sorting
 - [ ] add more tests for edge cases
-- [ ] add Dockerfile and docker-compose.yml
+- [ ] add multi stage Dockerfile
+- 
 - [ ] add CI/CD pipeline (GitHub Actions)
 - [ ] add linting (flake8, black)
 - [ ] add pre-commit hooks
@@ -257,6 +258,14 @@ coverage html
 # docker compose setup
 
 ```bash
+git clone git@github.com:arturro/django-ninja-prv.git
+# or
+gh repo clone arturro/django-ninja-prv
+
+cd django-ninja-prv
+
+
+
 docker compose up -d --build
 docker compose exec web python manage.py migrate
 docker compose exec web python manage.py createsuperuser
