@@ -209,10 +209,48 @@ __Your API must pass all validation tests to qualify for payment.__
 
 For questions about multi-tenancy requirements or technical issues, contact: 
 
-    * Marcin Galczynski@
+    * Marcin Galczynski
     * Tomasz Mackowski
 
 Deadline: [X] days from receipt
+
+
+
+# local setup
+
+```bash
+git clone git@github.com:arturro/django-ninja-prv.git
+# or
+gh repo clone arturro/django-ninja-prv
+cd django-ninja-prv
+```
+
+### docker compose setup
+
+```bash
+docker compose up -d --build
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py test
+```
+
+### local setup without docker
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+pip install --upgrade pip
+pip install -r requirements/requirements.txt
+./manage.py migrate
+./manage.py createsuperuser
+./manage.py test
+./manage.py runserver 0.0.0.0:8000
+```
+   * open http://127.0.0.1:8000/admin/tenant/user/ create user with organization
+   * open http://127.0.0.1:8000/api/v1/docs#/ Ninja automatic docs
+    
+
+
+http://13.60.68.249:8000/api/v1/docs#/token/token_obtain_pair
 
 
 ## private
@@ -254,21 +292,3 @@ coverage html
 - [ ] add database indexing for better performance
 - [ ] local deployment from uv installation
 
-
-# docker compose setup
-
-```bash
-git clone git@github.com:arturro/django-ninja-prv.git
-# or
-gh repo clone arturro/django-ninja-prv
-
-cd django-ninja-prv
-
-
-
-docker compose up -d --build
-docker compose exec web python manage.py migrate
-docker compose exec web python manage.py createsuperuser
-docker compose exec web python manage.py test
-```
-   
