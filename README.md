@@ -214,9 +214,11 @@ For questions about multi-tenancy requirements or technical issues, contact:
 
 Deadline: [X] days from receipt
 
+## Running project on EC2
 
+http://13.60.68.249:8000/api/v1/docs#/
 
-# local setup
+## local setup
 
 ```bash
 git clone git@github.com:arturro/django-ninja-prv.git
@@ -262,10 +264,16 @@ coverage report
 coverage html
 ```
 
-## TODO
+### TODO
 
+- [ ] better deployment on EC2
+  - [ ] disable debug
+  - [ ] use postgres
+  - [ ] gunicorn
+  - [ ] S3 for static files
+  - [ ] terraform?
 - [ ] fix all TODOs in the code
-- [ ] add deployment instructions to README
+- [x] add deployment instructions to README
 - [ ] add user registration endpoint?
 - [ ] add pagination to GET /api/v1/tasks/
 - [ ] add filtering to GET /api/v1/tasks/ (by deadline and priority)
@@ -273,7 +281,6 @@ coverage html
 - [ ] add tests for pagination, filtering and sorting
 - [ ] add more tests for edge cases
 - [ ] add multi stage Dockerfile
-- 
 - [ ] add CI/CD pipeline (GitHub Actions)
 - [ ] add linting (flake8, black)
 - [ ] add pre-commit hooks
