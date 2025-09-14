@@ -207,7 +207,10 @@ __Your API must pass all validation tests to qualify for payment.__
 
 ## Technical Support
 
-For questions about multi-tenancy requirements or technical issues, contact: marcin.galczynski@int4.com or tomasz.mackowski@int4.com
+For questions about multi-tenancy requirements or technical issues, contact: 
+
+    * Marcin Galczynski@
+    * Tomasz Mackowski
 
 Deadline: [X] days from receipt
 
@@ -220,3 +223,43 @@ coverage run manage.py test
 coverage report
 coverage html
 ```
+
+## TODO
+
+- [ ] fix all TODOs in the code
+- [ ] add deployment instructions to README
+- [ ] add user registration endpoint?
+- [ ] add pagination to GET /api/v1/tasks/
+- [ ] add filtering to GET /api/v1/tasks/ (by deadline and priority)
+- [ ] add sorting to GET /api/v1/tasks/ (by deadline and priority)
+- [ ] add tests for pagination, filtering and sorting
+- [ ] add more tests for edge cases
+- [ ] add Dockerfile and docker-compose.yml
+- [ ] add CI/CD pipeline (GitHub Actions)
+- [ ] add linting (flake8, black)
+- [ ] add pre-commit hooks
+- [ ] add logging
+- [ ] add monitoring (Sentry)
+- [ ] add rate limiting
+- [ ] add caching (Redis)
+- [ ] add Swagger/OpenAPI documentation
+- [ ] add Postman collection
+- [ ] add environment variables management (django-environ)
+- [ ] add user roles (admin, user)
+- [ ] add password reset functionality
+- [ ] add more documentation
+- [ ] add uv installation to requirements.txt
+- [ ] add .env.example file
+- [ ] add database indexing for better performance
+- [ ] local deployment from uv installation
+
+
+# docker compose setup
+
+```bash
+docker compose up -d --build
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py test
+```
+   
