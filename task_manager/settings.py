@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from ast import literal_eval
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -28,7 +29,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "CHANGE_ME!!!")
 DEBUG = True
 # DEBUG = bool(os.environ.get("DEBUG", default=0))
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = literal_eval(os.getenv('ALLOWED_HOSTS', '["*"]'))
 
 # Application definition
 
@@ -187,3 +189,12 @@ NINJA_JWT = {
 }
 
 # from ninja_jwt import schema
+
+# static files / tmp
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
