@@ -1,11 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
+from django.utils import timezone
 
 from ninja.testing import TestClient
 
 from tenant.models import Organization
 
 from .api import router
+from .models import Task
 
 
 class AnonymousUserApiTest(TestCase):
@@ -20,6 +22,7 @@ class AnonymousUserApiTest(TestCase):
 class AuthenticatedUserApiTest(TestCase):
 
     def setUp(self):
+        # now = timezone.now()
         self.test_password = "testpass123"
         self.organization_1 = Organization.objects.create(name="Org 1")
         self.organization_2 = Organization.objects.create(name="Org 2")
@@ -92,12 +95,13 @@ class AuthenticatedUserApiTest(TestCase):
             [self.user1.id, self.organization_1.id, self.token_1],
             [self.user1_2.id, self.organization_1.id, self.token_1_2],
             [self.user2.id, self.organization_2.id, self.token_2],
-        ] :
-            self.task_test_data["assigned_to_id"] = user[0]
-            self.task_test_data["organization_id"] = user[1]
+        ]:
+            task_test_data = dict(**self.task_test_data)
+            task_test_data["assigned_to_id"] = user[0]
+            task_test_data["organization_id"] = user[1]
             response = self.client.post(
                 "/api/v1/tasks/",
-                data=self.task_test_data,
+                data=task_test_data,
                 content_type="application/json",
                 headers={
                     "Content-Type": "application/json",
@@ -105,37 +109,6 @@ class AuthenticatedUserApiTest(TestCase):
                     "Authorization": f"Bearer {user[2]}",
                 },
             )
-
-        #
-        # response = self.client.post(
-        #     "/api/v1/tasks/",
-        #     data={
-        #         **tast_1_data,
-        #         "assigned_to_id": self.user1.id,
-        #         "organization_id": self.organization_1.id,
-        #     },
-        #     content_type="application/json",
-        #     headers={
-        #         "Content-Type": "application/json",
-        #         "accept": "application/json",
-        #         "Authorization": f"Bearer {self.token_1}",
-        #     },
-        # )
-        #
-        # response = self.client.post(
-        #     "/api/v1/tasks/",
-        #     data={
-        #         **tast_1_data,
-        #         "assigned_to_id": self.user1.id,
-        #         "organization_id": self.organization_1.id,
-        #     },
-        #     content_type="application/json",
-        #     headers={
-        #         "Content-Type": "application/json",
-        #         "accept": "application/json",
-        #         "Authorization": f"Bearer {self.token_1}",
-        #     },
-        # )
 
     def test_list_tasks_authenticated(self):
         response = self.client.get("/api/v1/tasks/", headers={"Authorization": f"Bearer {self.token_1}"})
@@ -152,3 +125,239 @@ class AuthenticatedUserApiTest(TestCase):
             self.assertEqual(task["organization_id"], self.organization_1.id)
             self.assertIn("created_at", task)
             self.assertEqual(task["deadline_datetime_with_tz"], self.task_test_data["deadline_datetime_with_tz"])
+
+    def test_list_tasks_no_token_should_return_error(self):
+        response = self.client.get("/api/v1/tasks/", headers={})
+        assert response.status_code == 401
+
+    def test_post_task_authenticated(self):
+        task_test_data = dict(**self.task_test_data)
+        task_test_data["assigned_to_id"] = self.user1.id
+        task_test_data["organization_id"] = self.organization_1.id
+        response = self.client.post(
+            "/api/v1/tasks/",
+            data=task_test_data,
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+                "Authorization": f"Bearer {self.token_1}",
+            },
+        )
+        self.assertIn(response.status_code, [200, 201])  # TODO: should return 201 created
+        data = response.json()
+        self.assertIn("id", data)
+
+    def test_post_task_diff_organization_should_should_return_error(self):
+        task_test_data = dict(**self.task_test_data)
+        task_test_data["assigned_to_id"] = self.user1.id
+        task_test_data["organization_id"] = self.organization_2.id
+        response = self.client.post(
+            "/api/v1/tasks/",
+            data=task_test_data,
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+                "Authorization": f"Bearer {self.token_1}",
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_post_task_diff_user_should_should_return_error(self):
+        task_test_data = dict(**self.task_test_data)
+        task_test_data["assigned_to_id"] = self.user2.id
+        task_test_data["organization_id"] = self.organization_1.id
+        response = self.client.post(
+            "/api/v1/tasks/",
+            data=task_test_data,
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+                "Authorization": f"Bearer {self.token_1}",
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_post_task_diff_token_should_return_error(self):
+        task_test_data = dict(**self.task_test_data)
+        task_test_data["assigned_to_id"] = self.user1.id
+        task_test_data["organization_id"] = self.organization_1.id
+        response = self.client.post(
+            "/api/v1/tasks/",
+            data=task_test_data,
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+                "Authorization": f"Bearer {self.token_2}",
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_post_task_no_token_should_return_error(self):
+        task_test_data = dict(**self.task_test_data)
+        task_test_data["assigned_to_id"] = self.user1.id
+        task_test_data["organization_id"] = self.organization_1.id
+        response = self.client.post(
+            "/api/v1/tasks/",
+            data=task_test_data,
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+            },
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_put_task_same_user_and_organization_authenticated(self):
+        task_test_data = dict(**self.task_test_data)
+        task_test_data["assigned_to_id"] = self.user1.id
+        task_test_data["organization_id"] = self.organization_1.id
+
+        task = Task.objects.filter(
+            assigned_to_id=self.user1.id,
+            organization_id=self.organization_1.id,
+        ).first()
+        task_test_data["title"] = "updated title"
+
+        response = self.client.put(
+            f"/api/v1/tasks/{task.id}",
+            data=task_test_data,
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+                "Authorization": f"Bearer {self.token_1}",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), {"success": True})
+        task_1_updated = Task.objects.get(id=task.id)
+        self.assertEqual(task_1_updated.title, "updated title")
+
+    def test_put_task_second_user_same_organization_authenticated(self):
+        task_test_data = dict(**self.task_test_data)
+        task_test_data["assigned_to_id"] = self.user1_2.id
+        task_test_data["organization_id"] = self.organization_1.id
+
+        task = Task.objects.filter(
+            assigned_to_id=self.user1.id,
+            organization_id=self.organization_1.id,
+        ).first()
+
+        response = self.client.put(
+            f"/api/v1/tasks/{task.id}",
+            data=task_test_data,
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+                "Authorization": f"Bearer {self.token_1}",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), {"success": True})
+        task_updated = Task.objects.get(id=task.id)
+        self.assertEqual(task_updated.assigned_to_id, task_test_data["assigned_to_id"])
+
+    def test_put_task_diff_user_same_organization_tauthenticated_should_return_error(self):
+        task_test_data = dict(**self.task_test_data)
+        task_test_data["assigned_to_id"] = self.user2.id
+        task_test_data["organization_id"] = self.organization_1.id
+
+        task = Task.objects.filter(
+            assigned_to_id=self.user1.id,
+            organization_id=self.organization_1.id,
+        ).first()
+
+        response = self.client.put(
+            f"/api/v1/tasks/{task.id}",
+            data=task_test_data,
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+                "Authorization": f"Bearer {self.token_1}",
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_put_task_same_user_diff_organization_authenticated_should_return_error(self):
+        task_test_data = dict(**self.task_test_data)
+        task_test_data["assigned_to_id"] = self.user1.id
+        task_test_data["organization_id"] = self.organization_2.id
+
+        task = Task.objects.filter(
+            assigned_to_id=self.user1.id,
+            organization_id=self.organization_1.id,
+        ).first()
+
+        response = self.client.put(
+            f"/api/v1/tasks/{task.id}",
+            data=task_test_data,
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+                "Authorization": f"Bearer {self.token_1}",
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_put_task_same_user_organization_diff_token_authenticated_should_return_error(self):
+        task_test_data = dict(**self.task_test_data)
+        task_test_data["assigned_to_id"] = self.user1.id
+        task_test_data["organization_id"] = self.organization_2.id
+
+        task = Task.objects.filter(
+            assigned_to_id=self.user1.id,
+            organization_id=self.organization_1.id,
+        ).first()
+
+        response = self.client.put(
+            f"/api/v1/tasks/{task.id}",
+            data=task_test_data,
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+                "Authorization": f"Bearer {self.token_2}",
+            },
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_put_no_token_task_should_return_error(self):
+        task_test_data = dict(**self.task_test_data)
+        task_test_data["assigned_to_id"] = self.user1.id
+        task_test_data["organization_id"] = self.organization_2.id
+
+        task = Task.objects.filter(
+            assigned_to_id=self.user1.id,
+            organization_id=self.organization_1.id,
+        ).first()
+
+        response = self.client.put(
+            f"/api/v1/tasks/{task.id}",
+            data=task_test_data,
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+            },
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_delete_task_authenticated(self):
+        task = Task.objects.filter(organization=self.organization_1).first()
+        response = self.client.delete(
+            f"/api/v1/tasks/{task.id}",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+                "Authorization": f"Bearer {self.token_1}",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), {"success": True})

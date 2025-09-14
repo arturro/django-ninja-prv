@@ -29,10 +29,10 @@ Build a Django REST API with multi-tenant task management:
     • POST /api/v1/users/ - Add user to current user's organization
 
 Questions:
+    
     * what with first user in organization? only admin can create organization and first user?
     * maybe better is use task_id instead of id in task endpoints?
-      
-
+    * may we use default url: /api/v1/token/pair instead of /api/v1/auth/login ?
 
 #### Data Models:
     • Organization: name, created_at
