@@ -19,7 +19,22 @@ class AnonymousUserApiTest(TestCase):
     # TODO: check other endpoints
 
 
-class AuthenticatedUserApiTest(TestCase):
+class TaskApiTest(TestCase):
+
+    def _login_user(self, username: str, password: str) -> str:
+        response = self.client.post(
+            "/api/v1/token/pair",
+            data={
+                "username": username,
+                "password": password,
+            },
+            content_type="application/json",
+            headers={
+                "Content-Type": "application/json",
+                "accept": "application/json",
+            },
+        )
+        return response.json().get("access")
 
     def setUp(self):
         # now = timezone.now()
@@ -39,47 +54,9 @@ class AuthenticatedUserApiTest(TestCase):
 
         self.client = Client()
 
-        response = self.client.post(
-            "/api/v1/token/pair",
-            data={
-                "username": self.user1.username,
-                "password": self.test_password,
-            },
-            content_type="application/json",
-            headers={
-                "Content-Type": "application/json",
-                "accept": "application/json",
-            },
-        )
-        self.token_1 = response.json().get("access")
-
-        response = self.client.post(
-            "/api/v1/token/pair",
-            data={
-                "username": self.user1_2.username,
-                "password": self.test_password,
-            },
-            content_type="application/json",
-            headers={
-                "Content-Type": "application/json",
-                "accept": "application/json",
-            },
-        )
-        self.token_1_2 = response.json().get("access")
-
-        response = self.client.post(
-            "/api/v1/token/pair",
-            data={
-                "username": self.user2.username,
-                "password": self.test_password,
-            },
-            content_type="application/json",
-            headers={
-                "Content-Type": "application/json",
-                "accept": "application/json",
-            },
-        )
-        self.token_2 = response.json().get("access")
+        self.token_1 = self._login_user(self.user1.username, self.test_password)
+        self.token_1_2 = self._login_user(self.user1_2.username, self.test_password)
+        self.token_2 = self._login_user(self.user2.username, self.test_password)
 
         self.task_test_data = {
             "title": "string",
@@ -211,7 +188,7 @@ class AuthenticatedUserApiTest(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_put_task_same_user_and_organization_authenticated(self):
+    def test_put_task_same_user_and_organization(self):
         task_test_data = dict(**self.task_test_data)
         task_test_data["assigned_to_id"] = self.user1.id
         task_test_data["organization_id"] = self.organization_1.id
@@ -237,7 +214,7 @@ class AuthenticatedUserApiTest(TestCase):
         task_1_updated = Task.objects.get(id=task.id)
         self.assertEqual(task_1_updated.title, "updated title")
 
-    def test_put_task_second_user_same_organization_authenticated(self):
+    def test_put_task_second_user_same_organization(self):
         task_test_data = dict(**self.task_test_data)
         task_test_data["assigned_to_id"] = self.user1_2.id
         task_test_data["organization_id"] = self.organization_1.id
@@ -262,7 +239,7 @@ class AuthenticatedUserApiTest(TestCase):
         task_updated = Task.objects.get(id=task.id)
         self.assertEqual(task_updated.assigned_to_id, task_test_data["assigned_to_id"])
 
-    def test_put_task_diff_user_same_organization_tauthenticated_should_return_error(self):
+    def test_put_task_diff_user_same_organization_should_return_error(self):
         task_test_data = dict(**self.task_test_data)
         task_test_data["assigned_to_id"] = self.user2.id
         task_test_data["organization_id"] = self.organization_1.id
@@ -284,7 +261,7 @@ class AuthenticatedUserApiTest(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_put_task_same_user_diff_organization_authenticated_should_return_error(self):
+    def test_put_task_same_user_diff_organization_should_return_error(self):
         task_test_data = dict(**self.task_test_data)
         task_test_data["assigned_to_id"] = self.user1.id
         task_test_data["organization_id"] = self.organization_2.id
@@ -306,7 +283,7 @@ class AuthenticatedUserApiTest(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_put_task_same_user_organization_diff_token_authenticated_should_return_error(self):
+    def test_put_task_same_user_organization_diff_token_should_return_error(self):
         task_test_data = dict(**self.task_test_data)
         task_test_data["assigned_to_id"] = self.user1.id
         task_test_data["organization_id"] = self.organization_2.id
@@ -361,3 +338,5 @@ class AuthenticatedUserApiTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(response.json(), {"success": True})
+
+    # TODO add other delete tests...e.g. diff org, diff user, no token, ...

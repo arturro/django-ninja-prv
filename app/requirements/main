@@ -1,3 +1,5 @@
+# Requirements for the main application, add missing dependencies here
+
 django
 django-ninja
 django-ninja-extra
